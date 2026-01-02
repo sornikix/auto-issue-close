@@ -1,0 +1,27 @@
+name: Auto Close Issues
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  close-issues:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Close completed or wontfix issues
+      if: ${{ contains('completed,wontfix', github.event.label.name) }}
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const issueNumber = context.payload.issue.number;
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+          const label = context.payload.label.name;
+          if (['completed', 'wontfix'].includes(label)) {
+            await github.issues.update({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              state: 'closed'
+            });
+          }
